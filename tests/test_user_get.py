@@ -10,11 +10,9 @@ class TestUserGet(BaseCase):
         response = requests.get("https://playground.learnqa.ru/api/user/2")
 
         Assertions.assert_json_has_key(response, "username")
-        Assertions.assert_json_has_not_key(response, "email")
-        Assertions.assert_json_has_not_key(response, "firstName")
-        Assertions.assert_json_has_not_key(response, "lastName")
+        Assertions.assert_json_has_not_keys(response, ["email", "firstName", "lastName"])
 
-        print(response.content)
+        # print(response.content)
 
     def test_get_user_details_auth_as_same_user(self):
         data = {
