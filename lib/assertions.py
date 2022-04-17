@@ -25,3 +25,19 @@ class Assertions:
     def assert_status_code(response: Response, expected_status_code):
         assert response.status_code == expected_status_code,\
             f"Unexpected status code! Expected: {expected_status_code} Actual: {response.status_code}"
+
+    @staticmethod
+    def assert_required_params(response: Response, param):
+        assert response.content.decode("utf-8") == f"The following required params are missed: {param}",\
+            f"The following required params are missed: '{param}"
+
+    @staticmethod
+    def assert_too_short_param_value(response: Response, param, value):
+        assert response.content.decode("utf-8") == f"The value of '{param}' field is too short", \
+             f"The value of '{param}' field is too short '{value}'"
+
+    @staticmethod
+    def assert_too_long_param_value(response: Response, param, value):
+        assert response.content.decode("utf-8") == f"The value of '{param}' field is too long",\
+            f"The value of '{param}' field is too long {value.__len__()}"
+

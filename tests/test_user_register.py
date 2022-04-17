@@ -60,23 +60,23 @@ class TestUserAuth(BaseCase):
         response = requests.post("https://playground.learnqa.ru/api/user/", data=self.data)
 
         Assertions.assert_status_code(response, 400)
-        assert response.content.decode("utf-8") == f"The following required params are missed: {param}", \
-            f"The following required params are missed: '{param}"
+        Assertions.assert_required_params(response, param)
 
     def test_short_username(self):
-        self.data['username'] = 'a'
+        param = 'username'
+        self.data[param] = 'a'
 
         response = requests.post("https://playground.learnqa.ru/api/user/", data=self.data)
 
         Assertions.assert_status_code(response, 400)
-        assert response.content.decode("utf-8") == f"The value of 'username' field is too short", \
-            f"The value of 'username' field is too short '{self.data['username']}'"
+        Assertions.assert_too_short_param_value(response, param, self.data[param])
 
     def test_too_long_username(self):
-        self.data['username'] = 'a' * 251
+        param = 'username'
+        self.data[param] = 'a' * 251
 
         response = requests.post("https://playground.learnqa.ru/api/user/", data=self.data)
 
         Assertions.assert_status_code(response, 400)
-        assert response.content.decode("utf-8") == f"The value of 'username' field is too long", \
-            f"The value of 'username' field is too long {self.data['username'].__len__()}"
+        Assertions.assert_too_long_param_value(response, param, self.data[param])
+
