@@ -1,7 +1,6 @@
 import requests
 from lib.base_case import BaseCase  # import lib.base_case as BaseCase
 from lib.assertions import Assertions  # import lib.assertions as Assertions
-from datetime import datetime
 import pytest
 
 
@@ -14,69 +13,59 @@ class TestUserAuth(BaseCase):
         ("email")
     ]
 
-    def setup(self):
-        base_part = 'learnqa'
-        domain = 'example.com'
-        random_part = datetime.now().strftime("%m%d%Y%H%M%S")
-        self.email = f"{base_part}{random_part}@{domain}"
-
-        self.data = {
-            'password': '123',
-            'username': 'learnqa',
-            'firstName': 'learnqa',
-            'lastName': 'learnqa',
-            'email': self.email
-        }
-
     def test_create_user_successfully(self):
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=self.data)
+        data = self.prepare_registration_data()
+        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
 
         Assertions.assert_status_code(response, 200)
         Assertions.assert_json_has_key(response, "id")
 
     def test_create_user_with_existing_email(self):
         existing_email = 'vinkotov@example.com'
-        self.data['email'] = existing_email
+        data = self.prepare_registration_data(existing_email)
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=self.data)
+        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
         assert response.content.decode("utf-8") == f"Users with email '{existing_email}' already exists", \
             f"Unexpected response content '{response.content}'"
 
     def test_invalid_email_format(self):
-        self.data['email'] = self.email.replace('@', '')
+        data = self.prepare_registration_data()
+        data['email'] = data['email'].replace('@', '')
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=self.data)
+        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
         assert response.content.decode(
-            "utf-8") == f"Invalid email format", f"Invalid email format {self.data['email']}"
+            "utf-8") == f"Invalid email format", f"Invalid email format {data['email']}"
 
     @pytest.mark.parametrize('param', required_params)
     def test_required_params(self, param):
-        del self.data[param]
+        data = self.prepare_registration_data()
+        del data[param]
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=self.data)
+        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
         Assertions.assert_required_params(response, param)
 
     def test_short_username(self):
+        data = self.prepare_registration_data()
         param = 'username'
-        self.data[param] = 'a'
+        data[param] = 'a'
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=self.data)
+        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
-        Assertions.assert_too_short_param_value(response, param, self.data[param])
+        Assertions.assert_too_short_param_value(response, param, data[param])
 
     def test_too_long_username(self):
+        data = self.prepare_registration_data()
         param = 'username'
-        self.data[param] = 'a' * 251
+        data[param] = 'a' * 251
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=self.data)
+        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
-        Assertions.assert_too_long_param_value(response, param, self.data[param])
-
+        Assertions.assert_too_long_param_value(response, param, data[param])
