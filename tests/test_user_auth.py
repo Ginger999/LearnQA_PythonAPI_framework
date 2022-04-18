@@ -24,20 +24,16 @@ class TestUserAuth(BaseCase):
         self.token = self.get_header(response1, "x-csrf-token")
 
     def test_auth_user(self):
-        print("\n***** user_id", self.user_id_from_auth_method)
-        print("***** token", self.token)
-        print("***** auth_sid", self.auth_sid)
-        print("***** Сейчас упадет (((")
         response2 = requests.get(
             "https://playground.learnqa.ru/api/user/auth",
             headers={"x-csrf-token": self.token},
-            cookies={"auth_id", self.auth_sid}
+            cookies={"auth_id": self.auth_sid}
         )
         Assertions.assert_json_value_by_name(
             response2,
             "user_id",
             self.user_id_from_auth_method,
-            "User id from auth is not equal to user id from check method"
+            f"User id from auth is not equal to user id from check method"
         )
 
     # @pytest.mark.parametrize('condition', exclude_params)
