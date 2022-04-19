@@ -1,9 +1,10 @@
+import allure
 import pytest
 from lib.assertions import Assertions  # import lib.assertions as Assertions
 from lib.base_case import BaseCase  # import lib.base_case as BaseCase
 from lib.my_requests import MyRequests  # import lib.my_requests as MyRequests
 
-
+@allure.epic("Authorization cases")
 class TestUserAuth(BaseCase):
     exclude_params = [
         ("no_cookie"),
@@ -22,6 +23,7 @@ class TestUserAuth(BaseCase):
         self.auth_sid = self.get_cookie(response1, "auth_sid")
         self.token = self.get_header(response1, "x-csrf-token")
 
+    @allure.description("This test successfully authorizes user by email and password")
     def test_auth_user(self):
         response2 = MyRequests.get(
             "/user/auth",
@@ -35,20 +37,22 @@ class TestUserAuth(BaseCase):
             f"User id from auth is not equal to user id from check method"
         )
 
-    # @pytest.mark.parametrize('condition', exclude_params)
-    # def test_negative_auth_user(self, condition):
-    #     if condition == "no_cookie":
-    #         response2 = requests.get(
-    #             "https://playground.learnqa.ru/api/user/auth",
-    #             headers={"x-csrf-token": self.token},
-    #         )
-    #     else:
-    #         response2 = requests.get(
-    #             "https://playground.learnqa.ru/api/user/auth",
-    #             cookies={"auth_id", self.auth_sid}
-    #         )
-    #     Assertions.assert_json_value_by_name(
-    #         response2,
-    #         0,
-    #         f"User is authorized with condition '{condition}'"
-    #     )
+    @allure.description("This test authorization status w/o sending auth cookie or token")
+    @pytest.mark.parametrize('condition', exclude_params)
+    def test_negative_auth_user(self, condition):
+        if condition == "no_cookie":
+            response2 = MyRequests.get(
+                "/user/auth",
+                headers={"x-csrf-token": self.token},
+            )
+        else:
+            response2 = MyRequests.get(
+                "/user/auth",
+                cookies={"auth_id": self.auth_sid}
+            )
+        Assertions.assert_json_value_by_name(
+            response2,
+            "user_id",
+            0,
+            f"User is authorized with condition '{condition}'"
+        )

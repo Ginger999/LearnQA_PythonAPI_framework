@@ -1,9 +1,10 @@
+import allure
 import pytest
 from lib.assertions import Assertions  # import lib.assertions as Assertions
 from lib.base_case import BaseCase  # import lib.base_case as BaseCase
 from lib.my_requests import MyRequests  # import lib.my_requests as MyRequests
 
-
+@allure.epic("Info getting cases")
 class TestUserGet(BaseCase):
     def test_get_user_details_not_auth(self):
         response = MyRequests.get("/user/2")
@@ -13,6 +14,7 @@ class TestUserGet(BaseCase):
 
         # print(response.content)
 
+    @allure.description("This test loggings by user and read expected user info")
     def test_get_user_details_auth_as_same_user(self):
         data = {
             'email': 'vinkotov@example.com',

@@ -1,10 +1,12 @@
+import allure
 import pytest
 from lib.assertions import Assertions  # import lib.assertions as Assertions
 from lib.base_case import BaseCase  # import lib.base_case as BaseCase
 from lib.my_requests import MyRequests  # import lib.my_requests as MyRequests
 
-
+@allure.epic("Editing cases")
 class TestUserEdit(BaseCase):
+    @allure.description("This test edits just created user firstname and save edited data")
     def test_edit_just_created_user(self):
         # Register
         register_data = self.prepare_registration_data()
