@@ -1,8 +1,7 @@
 import pytest
-import requests
-
-from lib.base_case import BaseCase  # import lib.base_case as BaseCase
 from lib.assertions import Assertions  # import lib.assertions as Assertions
+from lib.base_case import BaseCase  # import lib.base_case as BaseCase
+from lib.my_requests import MyRequests  # import lib.my_requests as MyRequests
 
 
 class TestUserAuth(BaseCase):
@@ -17,17 +16,17 @@ class TestUserAuth(BaseCase):
             'password': '1234'
         }
 
-        response1 = requests.post("https://playground.learnqa.ru/api/user/login", data=data)
+        response1 = MyRequests.post("/user/login", data=data)
 
         self.user_id_from_auth_method = self.get_json_value(response1, "user_id")
         self.auth_sid = self.get_cookie(response1, "auth_sid")
         self.token = self.get_header(response1, "x-csrf-token")
 
     def test_auth_user(self):
-        response2 = requests.get(
-            "https://playground.learnqa.ru/api/user/auth",
+        response2 = MyRequests.get(
+            "/user/auth",
             headers={"x-csrf-token": self.token},
-            cookies={"auth_id": self.auth_sid}
+            cookies={"auth_sid": self.auth_sid}
         )
         Assertions.assert_json_value_by_name(
             response2,

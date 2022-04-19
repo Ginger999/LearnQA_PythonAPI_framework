@@ -1,7 +1,7 @@
-import requests
-from lib.base_case import BaseCase  # import lib.base_case as BaseCase
-from lib.assertions import Assertions  # import lib.assertions as Assertions
 import pytest
+from lib.assertions import Assertions  # import lib.assertions as Assertions
+from lib.base_case import BaseCase  # import lib.base_case as BaseCase
+from lib.my_requests import MyRequests  # import lib.my_requests as MyRequests
 
 
 class TestUserAuth(BaseCase):
@@ -15,7 +15,7 @@ class TestUserAuth(BaseCase):
 
     def test_create_user_successfully(self):
         data = self.prepare_registration_data()
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
+        response = MyRequests.post("/user/", data=data)
 
         Assertions.assert_status_code(response, 200)
         Assertions.assert_json_has_key(response, "id")
@@ -24,7 +24,7 @@ class TestUserAuth(BaseCase):
         existing_email = 'vinkotov@example.com'
         data = self.prepare_registration_data(existing_email)
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
+        response = MyRequests.post("/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
         assert response.content.decode("utf-8") == f"Users with email '{existing_email}' already exists", \
@@ -34,7 +34,7 @@ class TestUserAuth(BaseCase):
         data = self.prepare_registration_data()
         data['email'] = data['email'].replace('@', '')
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
+        response = MyRequests.post("/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
         assert response.content.decode(
@@ -45,7 +45,7 @@ class TestUserAuth(BaseCase):
         data = self.prepare_registration_data()
         del data[param]
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
+        response = MyRequests.post("/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
         Assertions.assert_required_params(response, param)
@@ -55,7 +55,7 @@ class TestUserAuth(BaseCase):
         param = 'username'
         data[param] = 'a'
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
+        response = MyRequests.post("/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
         Assertions.assert_too_short_param_value(response, param, data[param])
@@ -65,7 +65,7 @@ class TestUserAuth(BaseCase):
         param = 'username'
         data[param] = 'a' * 251
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
+        response = MyRequests.post("/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
         Assertions.assert_too_long_param_value(response, param, data[param])
