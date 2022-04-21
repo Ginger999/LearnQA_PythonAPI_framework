@@ -2,6 +2,7 @@
 __pycahe__/
 logs/*
 test_results/
+.run
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
