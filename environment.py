@@ -24,4 +24,5 @@ class Environment:
         else:
             raise Exception(f"Unknown variable of ENV variable {self.env}")
 
+
 ENV_OBJECT = Environment()
