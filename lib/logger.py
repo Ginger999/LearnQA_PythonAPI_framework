@@ -1,20 +1,26 @@
 import os
+import inspect
 from datetime import datetime
 from requests import Response
+from environment import ENV_OBJECT
 
 
 class Logger:
-    file_name = f"logs/log_" + str(datetime.now().strftime("%y-%m-%d_%H-%M-%S")) + ".log"
+    file_name = f"\logs\log_" + str(datetime.now().strftime("%y-%m-%d_%H-%M-%S")) + ".log"
+    # От каталога текущего модуля вврх по дереву каталогов
+    full_file_name = os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], f"..{file_name}"))
 
     @classmethod
     def _write_log_to_file(cls, data: str):
-        with open(cls.file_name, 'a', encoding='utf-8') as logger_file:
+        # print(f"os.path.exists(cls.file_name)")
+        with open(cls.full_file_name, 'a', encoding='utf-8') as logger_file:
             logger_file.write(data)
 
     @classmethod
     def add_request(cls, url: str, data: dict, headers: dict, cookies: dict, method: str):
         testname = os.environ.get('PYTEST_CURRENT_TEST')
         data_to_add = "\n-----\n" + testname
+        data_to_add += f"\n{ENV_OBJECT.env}\n"
         data_to_add += f"Test: {testname}\n"
         data_to_add += f"Time: {str(datetime.now())}\n"
         data_to_add += f"Request method: {method}\n"
