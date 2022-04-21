@@ -6,7 +6,7 @@ from environment import ENV_OBJECT
 
 
 class Logger:
-    file_name = f"\logs\log_" + str(datetime.now().strftime("%y-%m-%d_%H-%M-%S")) + ".log"
+    file_name = f"\\logs\\log_" + str(datetime.now().strftime("%y-%m-%d_%H-%M-%S")) + ".log"
     # От каталога текущего модуля вврх по дереву каталогов
     full_file_name = os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe()))[0], f"..{file_name}"))
 
