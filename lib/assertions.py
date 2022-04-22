@@ -70,3 +70,8 @@ class Assertions:
     def assert_too_long_param_value(response: Response, param, value):
         assert response.content.decode("utf-8") == f"The value of '{param}' field is too long",\
             f"The value of '{param}' field is too long {value.__len__()}"
+
+    @staticmethod
+    def assert_auth_token_not_supplied(response: Response, email):
+        assert response.content.decode("utf-8") == f"Auth token not supplied",\
+            f"The attempt to changed unlogged user '{email}'"
