@@ -75,3 +75,8 @@ class Assertions:
     def assert_auth_token_not_supplied(response: Response, email):
         assert response.content.decode("utf-8") == f"Auth token not supplied",\
             f"The attempt to changed unlogged user '{email}'"
+
+    @staticmethod
+    def assert_invalid_email_format(response: Response, email):
+        assert response.content.decode("utf-8") == f"Invalid email format", \
+            f"Invalid email format '{email}'"
