@@ -5,7 +5,7 @@ from lib.assertions import Assertions  # import lib.assertions as Assertions
 import pytest
 
 @allure.epic("Registration cases")
-class TestUserAuth(BaseCase):
+class TestUserRegister(BaseCase):
     required_params = [
         ("password"),
         ("username"),
@@ -21,10 +21,11 @@ class TestUserAuth(BaseCase):
 
         Assertions.assert_status_code(response, 200)
         Assertions.assert_json_has_key(response, "id")
+        return {'data': data, 'response': response}
 
     @allure.description("")
     def test_create_user_with_existing_email(self):
-        existing_email = 'vinkotov@example.com'
+        existing_email = self.existing_email
         data = self.prepare_registration_data(existing_email)
 
         response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
@@ -36,7 +37,7 @@ class TestUserAuth(BaseCase):
     @allure.description("")
     def test_invalid_email_format(self):
         data = self.prepare_registration_data()
-        data['email'] = data['email'].replace('@', '')
+        data['email'] = self.prepare_invalid_format_email(data['email'])
 
         response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
 
@@ -59,7 +60,7 @@ class TestUserAuth(BaseCase):
     def test_short_username(self):
         data = self.prepare_registration_data()
         param = 'username'
-        data[param] = 'a'
+        data[param] = self.too_short_first_name
 
         response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
 
