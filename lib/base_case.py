@@ -4,6 +4,9 @@ from requests import Response
 
 
 class BaseCase:
+    existing_email = 'vinkotov@example.com'
+    too_short_first_name = 'a'
+
     def get_cookie(self, response: Response, cookie_name):
         assert cookie_name in response.cookies, f"Cannot find cookie with name {cookie_name} in the last response"
         return response.cookies[cookie_name]
@@ -29,9 +32,20 @@ class BaseCase:
             random_part = datetime.now().strftime("%m%d%Y%H%M%S")
             email = f"{base_part}{random_part}@{domain}"
         return {
-            'password': '123',
+            'password': '1234',
             'username': 'learnqa',
             'firstName': 'learnqa',
             'lastName': 'learnqa',
             'email': email
         }
+
+    def prepare_invalid_format_email(self, email=None):
+        if email is None:
+            base_part = 'learnqa'
+            domain = 'example.com'
+            random_part = datetime.now().strftime("%m%d%Y%H%M%S")
+            email = f"{base_part}{random_part}@{domain}"
+
+        email = email.replace('@', '')
+
+        return email
