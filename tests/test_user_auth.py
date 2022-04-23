@@ -4,6 +4,7 @@ from lib.assertions import Assertions  # import lib.assertions as Assertions
 from lib.base_case import BaseCase  # import lib.base_case as BaseCase
 from lib.my_requests import MyRequests  # import lib.my_requests as MyRequests
 
+
 @allure.epic("Authorization cases")
 class TestUserAuth(BaseCase):
     exclude_params = [
