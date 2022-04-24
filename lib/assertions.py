@@ -89,7 +89,3 @@ class Assertions:
         content = response.content.decode("utf-8")
 
         assert (content.find(err_msg_1) > -1 or content.find(err_msg_2) > -1), f"{err_msg_1} '{value}'"
-
-
-
-
