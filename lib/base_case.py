@@ -4,7 +4,12 @@ from requests import Response
 
 
 class BaseCase:
-    existing_email = 'vinkotov@example.com'
+    existing_user_data = {
+        'email': 'vinkotov@example.com',
+        'password': '1234'
+    }
+    existing_user_id = 2
+
     too_short_first_name = 'a'
     changed_user_params = {}
 

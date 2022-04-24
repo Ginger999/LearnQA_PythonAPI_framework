@@ -30,7 +30,7 @@ class TestUserRegister(BaseCase):
 
     @allure.description("")
     def test_create_user_with_existing_email(self):
-        existing_email = self.existing_email
+        existing_email = self.existing_user_data['email']
         data = self.prepare_registration_data(existing_email)
 
         response = MyRequests.post("/user/", data=data)

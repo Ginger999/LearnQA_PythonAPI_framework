@@ -17,10 +17,7 @@ class TestUserGet(BaseCase):
 
     @allure.description("This test loggings by user and read expected user info")
     def test_get_user_details_auth_as_same_user(self):
-        data = {
-            'email': 'vinkotov@example.com',
-            'password': '1234'
-        }
+        data = self.existing_user_data
         response1 = MyRequests.post("/user/login", data=data)
 
         auth_sid = self.get_cookie(response1, "auth_sid")
@@ -48,7 +45,7 @@ class TestUserGet(BaseCase):
         user_id_1 = self.get_json_value(response_1, "id")
 
         # Login by existing User2
-        response_2_1 = MyRequests.post("/user/login", data={'email': 'vinkotov@example.com', 'password': '1234'})
+        response_2_1 = MyRequests.post("/user/login", data=self.existing_user_data)
 
         Assertions.assert_status_code(response_2_1, 200)
 
