@@ -39,7 +39,7 @@ class TestUserGet(BaseCase):
     @allure.description("This test logins by User1 and tries to get User2 info")
     def test_get_user_details_auth_as_another_user(self):
         # Register User1
-        register_data = self.prepare_registration_email()
+        register_data = self.prepare_registration_data()
         response_1 = MyRequests.post("/user", data=register_data)
 
         Assertions.assert_status_code(response_1, 200)
