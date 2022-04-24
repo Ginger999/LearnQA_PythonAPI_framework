@@ -4,7 +4,6 @@ from datetime import datetime
 from lib.assertions import Assertions  # import lib.assertions as Assertions
 from lib.base_case import BaseCase  # import lib.base_case as BaseCase
 from lib.my_requests import MyRequests  # import lib.my_requests as MyRequests
-from tests.test_user_register import TestUserRegister   # import tests.test_user_register as TestUserRegister
 
 
 @allure.epic("Editing cases")
@@ -15,31 +14,27 @@ class TestUserEdit(BaseCase):
         ("lastName"),
         ("username")]
 
-    def created_user(self):
+    def create_user(self):
         """
         Create User using the exiting test
         :return: JSON {
-            'password': password,
-            'username': username,
-            'firstName': firstName,
-            'lastName': lastName,
-            'email': email,
-            'user_id': user_id}
+        'password': password,
+        'username': username,
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': email,
+        'user_id': user_id}
         """
-        # Register User using existing test
-        user_created_by_test = TestUserRegister.test_create_user_successfully(self)
+        data = self.prepare_registration_data()
 
-        # Get user registered data
-        registered_data = user_created_by_test.get('data')
+        response = MyRequests.post("/user/", data=data)
+        Assertions.assert_status_code(response, 200)
+        Assertions.assert_json_has_key(response, "id")
 
-        # Get response after user registration
-        response = user_created_by_test.get('response')
-
-        # Add useful info of 'user_id' into 'registered_data' dictionary
         user_id = self.get_json_value(response, "id")
-        registered_data['user_id'] = user_id
+        data['user_id'] = user_id
 
-        return registered_data
+        return data
 
     def login_by_user(self, email, password):
         """
@@ -78,7 +73,7 @@ class TestUserEdit(BaseCase):
     @pytest.mark.parametrize('param', include_params)
     def test_edit_just_created_user(self, param):
         # Register
-        created_user = self.created_user()
+        created_user = self.create_user()
         user_id = created_user.get('user_id')
 
         # Login
@@ -104,7 +99,7 @@ class TestUserEdit(BaseCase):
         Попытаемся изменить данные пользователя не будучи авторизованными
         """
         # Register
-        created_user = self.created_user()
+        created_user = self.create_user()
         user_id = created_user.get('user_id')
 
         # Edit
@@ -120,8 +115,8 @@ class TestUserEdit(BaseCase):
         Попытаемся изменить данные пользователя, будучи авторизованными другим пользователем
         """
         # Register User1 and User2
-        created_user_1 = self.created_user()
-        created_user_2 = self.created_user()
+        created_user_1 = self.create_user()
+        created_user_2 = self.create_user()
         user_id_1 = created_user_1.get('user_id')
         user_id_2 = created_user_2.get('user_id')
         old_param_value_1 = created_user_1.get(param)
@@ -162,7 +157,7 @@ class TestUserEdit(BaseCase):
         на email без '@'
         """
         # Register
-        created_user = self.created_user()
+        created_user = self.create_user()
         user_id = created_user.get('user_id')
 
         # Login
@@ -187,7 +182,7 @@ class TestUserEdit(BaseCase):
         на очень короткое значение в 1 символ
         """
         # Register
-        created_user = self.created_user()
+        created_user = self.create_user()
         user_id = created_user.get('user_id')
 
         # Login
