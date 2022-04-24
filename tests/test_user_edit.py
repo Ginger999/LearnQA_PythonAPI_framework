@@ -1,5 +1,6 @@
 import allure
 import pytest
+from datetime import datetime
 from lib.assertions import Assertions  # import lib.assertions as Assertions
 from lib.base_case import BaseCase  # import lib.base_case as BaseCase
 from lib.my_requests import MyRequests  # import lib.my_requests as MyRequests
@@ -8,7 +9,12 @@ from tests.test_user_register import TestUserRegister   # import tests.test_user
 
 @allure.epic("Editing cases")
 class TestUserEdit(BaseCase):
-    @pytest.fixture()
+    include_params = [
+        ("email"),
+        ("firstName"),
+        ("lastName"),
+        ("username")]
+
     def created_user(self):
         """
         Create User using the exiting test
@@ -35,160 +41,165 @@ class TestUserEdit(BaseCase):
 
         return registered_data
 
-    @allure.description("This test edits just created user firstname and save edited data")
-    def test_edit_just_created_user(self, created_user):
-        # Register
-        created_user_id = created_user.get('user_id')
-
-        # Login
-        response2 = MyRequests.post(
+    def login_by_user(self, email, password):
+        """
+        :return: response
+        """
+        response = MyRequests.post(
             "/user/login",
-            data={'email': created_user.get('email'), 'password': created_user.get('password')}
-        )
-        auth_sid = self.get_cookie(response2, "auth_sid")
-        token = self.get_header(response2, "x-csrf-token")
+            data={'email': email, 'password': password})
 
-        Assertions.assert_status_code(response2, 200)
+        return response
 
-        # Edit
-        new_name = 'Changed Name'
-
-        response3 = MyRequests.put(
-            f"/user/{created_user_id}",
+    def edit_user(self, user_id, token, auth_sid, param, param_value):
+        """
+        :return: response
+        """
+        response = MyRequests.put(
+            f"/user/{user_id}",
             headers={"x-csrf-token": token},
             cookies={"auth_sid": auth_sid},
-            data={"firstName": new_name}
+            data={param: param_value}
         )
-        Assertions.assert_status_code(response3, 200)
+        return response
 
-        # Get
-        response4 = MyRequests.get(
-            f"/user/{created_user_id}",
+    def get_user(self, user_id, token, auth_sid):
+        """
+        :return: response
+        """
+        response = MyRequests.get(
+            f"/user/{user_id}",
             headers={"x-csrf-token": token},
             cookies={"auth_sid": auth_sid}
         )
+        return response
 
-        Assertions.assert_json_value_by_name(
-            response4,
-            "firstName",
-            new_name,
-            "Wrong name of the user after edit"
-        )
+    @allure.description("This test edits just created user firstname and save edited data")
+    @pytest.mark.parametrize('param', include_params)
+    def test_edit_just_created_user(self, param):
+        # Register
+        created_user = self.created_user()
+        user_id = created_user.get('user_id')
+
+        # Login
+        logged_user = self.login_by_user(created_user.get('email'), created_user.get('password'))
+        auth_sid = self.get_cookie(logged_user, "auth_sid")
+        token = self.get_header(logged_user, "x-csrf-token")
+        Assertions.assert_status_code(logged_user, 200)
+
+        # Edit
+        new_param_value = self.changed_user_params.get(param)
+        edited_user = self.edit_user(user_id, token, auth_sid, param, new_param_value)
+        Assertions.assert_status_code(edited_user, 200)
+
+        # Get
+        resulted_user = self.get_user(user_id, token, auth_sid)
+        Assertions.assert_status_code(resulted_user, 200)
+        Assertions.assert_json_value_by_name(resulted_user, param, new_param_value, "")
 
     @allure.description("This test tries edits just created user without login")
-    def test_edit_just_created_user_without_login(self, created_user):
+    @pytest.mark.parametrize('param', include_params)
+    def test_edit_user_without_login(self, param):
         """
         Попытаемся изменить данные пользователя не будучи авторизованными
         """
         # Register
-        created_user_id = created_user.get('user_id')
+        created_user = self.created_user()
+        user_id = created_user.get('user_id')
 
         # Edit
-        changed_user_params = {
-            'firstName': 'ChangedName',
-            'lastName': 'ChangedLastName',
-            'email': '',
-            'password': '^%#E^47'
-        }
-        for param in changed_user_params:
-            param_value = changed_user_params.get(param)
-
-            response2 = MyRequests.put(
-                f"/user/{created_user_id}",
-                headers={"x-csrf-token": ""},
-                cookies={"auth_sid": created_user_id},
-                data={param: param_value}
-            )
-            Assertions.assert_status_code(response2, 400)
-            Assertions.assert_auth_token_not_supplied(response2, param, param_value)
+        new_param_value = self.changed_user_params.get(param)
+        edited_user = self.edit_user(user_id, None, None, param, new_param_value)
+        Assertions.assert_status_code(edited_user, 400)
+        Assertions.assert_auth_token_not_supplied(edited_user, param, new_param_value)
 
     @allure.description("This test is logged in by User1 and tries change data of User2")
-    def test_edit_just_created_user2_by_logged_user2(self, created_user):
+    @pytest.mark.parametrize('param', include_params)
+    def test_edit_user2_by_logged_user1(self, param):
         """
         Попытаемся изменить данные пользователя, будучи авторизованными другим пользователем
         """
-        # Loging by User 1
-        data = self.prepare_registration_email('vinkotov@example.com')
-        response1 = MyRequests.post("/user/login", data=data)
-        Assertions.assert_status_code(response1, 200)
+        # Register User1 and User2
+        created_user_1 = self.created_user()
+        created_user_2 = self.created_user()
+        user_id_1 = created_user_1.get('user_id')
+        user_id_2 = created_user_2.get('user_id')
+        old_param_value_1 = created_user_1.get(param)
+        old_param_value_2 = created_user_2.get(param)
 
-        auth_sid = self.get_cookie(response1, "auth_sid")
-        token = self.get_header(response1, "x-csrf-token")
+        # Login by User1
+        logged_user_1 = self.login_by_user(created_user_1.get('email'), created_user_1.get('password'))
+        auth_sid_1 = self.get_cookie(logged_user_1, "auth_sid")
+        token_1 = self.get_header(logged_user_1, "x-csrf-token")
+        Assertions.assert_status_code(logged_user_1, 200)
 
-        # Register User 2
-        created_user_id = created_user.get('user_id')
+        # Edit User2
+        new_param_value = self.changed_user_params.get(param)
+        edited_user_2 = self.edit_user(user_id_2, token_1, auth_sid_1, param, new_param_value)
+        # Assertions.assert_unexpected_status_code(edited_user, 200)  # Отловим при проверке, отредактировались ли данные
 
-        # Edit User 2
-        new_name = 'Changed Name'
-        response2 = MyRequests.put(
-            f"/user/{created_user_id}",
-            headers={"x-csrf-token": token},
-            cookies={"auth_sid": auth_sid},
-            data={"firstName": new_name}
-        )
-        Assertions.assert_status_code(response2, 400)
-        # Assertions.assert_auth_token_not_supplied(response2, new_name)
+        # Get User1 - param value should not be changed
+        resulted_user_1 = self.get_user(user_id_1, token_1, auth_sid_1)
+        Assertions.assert_status_code(resulted_user_1, 200)
+        Assertions.assert_json_value_by_name(resulted_user_1, param, old_param_value_1, "")
+
+        # Login by User2
+        logged_user_2 = self.login_by_user(created_user_2.get('email'), created_user_2.get('password'))
+        auth_sid_2 = self.get_cookie(logged_user_2, "auth_sid")
+        token_2 = self.get_header(logged_user_2, "x-csrf-token")
+        Assertions.assert_status_code(logged_user_2, 200)
+
+        # Get User2 - param value should not be changed
+        resulted_user_2 = self.get_user(user_id_2, token_2, auth_sid_2)
+        Assertions.assert_status_code(resulted_user_2, 200)
+        Assertions.assert_json_value_by_name(resulted_user_2, param, old_param_value_2, "")
 
     @allure.description("This test is logged in by User1 and tries replace email"
                         "with new email which doesn't contain '@'")
-    def test_edit_just_created_user_with_invalid_format_email(self, created_user):
+    def test_edit_user_with_invalid_format_email(self):
         """
         Попытаемся изменить email пользователя, будучи авторизованным тем же пользователем,
         на email без '@'
         """
         # Register
-        created_user_id = created_user.get('user_id')
+        created_user = self.created_user()
+        user_id = created_user.get('user_id')
 
         # Login
-        response2 = MyRequests.post(
-            "/user/login",
-            data={'email': created_user.get('email'), 'password': created_user.get('password')}
-        )
-        Assertions.assert_status_code(response2, 200)
+        logged_user = self.login_by_user(created_user.get('email'), created_user.get('password'))
+        auth_sid = self.get_cookie(logged_user, "auth_sid")
+        token = self.get_header(logged_user, "x-csrf-token")
+        Assertions.assert_status_code(logged_user, 200)
 
-        auth_sid = self.get_cookie(response2, "auth_sid")
-        token = self.get_header(response2, "x-csrf-token")
+        # Edit
+        param = 'email'
+        new_param_value = self.prepare_invalid_format_email(created_user.get('email'))
+        edited_user = self.edit_user(user_id, token, auth_sid, param, new_param_value)
 
-        # Edit User 2
-        new_email = self.prepare_invalid_format_email(created_user.get('email'))
-
-        response2 = MyRequests.put(
-            f"/user/{created_user_id}",
-            headers={"x-csrf-token": token},
-            cookies={"auth_sid": auth_sid},
-            data={"email": new_email}
-        )
-        Assertions.assert_status_code(response2, 400)
-        Assertions.assert_invalid_email_format(response2, new_email)
+        Assertions.assert_status_code(edited_user, 400)
+        Assertions.assert_invalid_email_format(edited_user, new_param_value)
 
     @allure.description("This test is logged in by User1 and tries replace firstName"
                         "with new firstName which has too short length")
-    def test_edit_just_created_user_with_too_short_username(self, created_user):
+    def test_with_too_short_firstname(self):
         """
         Попытаемся изменить firstName пользователя, будучи авторизованным тем же пользователем,
         на очень короткое значение в 1 символ
         """
-
         # Register
-        created_user_id = created_user.get('user_id')
+        created_user = self.created_user()
+        user_id = created_user.get('user_id')
 
         # Login
-        response2 = MyRequests.post(
-            "/user/login",
-            data={'email': created_user.get('email'), 'password': created_user.get('password')}
-        )
-        Assertions.assert_status_code(response2, 200)
+        logged_user = self.login_by_user(created_user.get('email'), created_user.get('password'))
+        auth_sid = self.get_cookie(logged_user, "auth_sid")
+        token = self.get_header(logged_user, "x-csrf-token")
+        Assertions.assert_status_code(logged_user, 200)
 
-        auth_sid = self.get_cookie(response2, "auth_sid")
-        token = self.get_header(response2, "x-csrf-token")
+        # Edit
+        param = 'firstName'
+        new_param_value = self.too_short_first_name
+        edited_user = self.edit_user(user_id, token, auth_sid, param, new_param_value)
 
-        new_first_name = self.too_short_first_name
-        # Edit User 2
-        response2 = MyRequests.put(
-            f"/user/{created_user_id}",
-            headers={"x-csrf-token": token},
-            cookies={"auth_sid": auth_sid},
-            data={"email": new_first_name}
-        )
-        Assertions.assert_status_code(response2, 400)
-        Assertions.assert_invalid_email_format(response2, new_first_name)
+        # Assertions.assert_status_code(edited_user, 400)
+        Assertions.assert_too_short_param_value(edited_user, param, new_param_value)
