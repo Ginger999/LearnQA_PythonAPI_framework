@@ -20,7 +20,7 @@ class TestUserRegister(BaseCase):
         """
         :return: JSON {'data': data, 'response': response}
         """
-        data = self.prepare_registration_email()
+        data = self.prepare_registration_data()
         response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
 
         Assertions.assert_status_code(response, 200)
@@ -30,7 +30,7 @@ class TestUserRegister(BaseCase):
     @allure.description("")
     def test_create_user_with_existing_email(self):
         existing_email = self.existing_email
-        data = self.prepare_registration_email(existing_email)
+        data = self.prepare_registration_data(existing_email)
 
         response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
 
@@ -40,7 +40,7 @@ class TestUserRegister(BaseCase):
 
     @allure.description("")
     def test_invalid_email_format(self):
-        data = self.prepare_registration_email()
+        data = self.prepare_registration_data()
         data['email'] = self.prepare_invalid_format_email(data['email'])
 
         response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
@@ -52,7 +52,7 @@ class TestUserRegister(BaseCase):
     @allure.description("")
     @pytest.mark.parametrize('param', required_params)
     def test_required_params(self, param):
-        data = self.prepare_registration_email()
+        data = self.prepare_registration_data()
         del data[param]
 
         response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
@@ -62,7 +62,7 @@ class TestUserRegister(BaseCase):
 
     @allure.description("")
     def test_short_username(self):
-        data = self.prepare_registration_email()
+        data = self.prepare_registration_data()
         param = 'username'
         data[param] = self.too_short_first_name
 
@@ -73,7 +73,7 @@ class TestUserRegister(BaseCase):
 
     @allure.description("")
     def test_too_long_username(self):
-        data = self.prepare_registration_email()
+        data = self.prepare_registration_data()
         param = 'username'
         data[param] = 'a' * 251
 
