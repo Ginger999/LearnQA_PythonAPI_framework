@@ -6,6 +6,10 @@ from requests import Response
 class BaseCase:
     existing_email = 'vinkotov@example.com'
     too_short_first_name = 'a'
+    changed_user_params = {}
+
+    def setup(self):
+        self.changed_user_params = self.prepare_changed_user_data()
 
     def get_cookie(self, response: Response, cookie_name):
         assert cookie_name in response.cookies, f"Cannot find cookie with name {cookie_name} in the last response"
@@ -25,12 +29,10 @@ class BaseCase:
 
         return response_as_dict[name]
 
-    def prepare_registration_email(self, email=None):
+    def prepare_registration_data(self, email=None):
         if email is None:
-            base_part = 'learnqa'
-            domain = 'example.com'
             random_part = datetime.now().strftime("%m%d%Y%H%M%S__%f")
-            email = f"{base_part}{random_part}@{domain}"
+            email = f"learnqa{random_part}@example.com"
         return {
             'password': '1234',
             'username': 'learnqa',
@@ -39,14 +41,21 @@ class BaseCase:
             'email': email
         }
 
-        return email
+    def prepare_changed_user_data(self):
+        random_part = datetime.now().strftime("%m%d%Y%H%M%S__%f")
+        email = f"workqa{random_part}@example.com"
+
+        return {'email': email,
+                'firstName': 'ChangedName',
+                'lastName': 'ChangedLastName',
+                'password': '^%#E^47',
+                'username': 'workqa'
+                }
 
     def prepare_invalid_format_email(self, email=None):
         if email is None:
-            base_part = 'learnqa'
-            domain = 'example.com'
             random_part = datetime.now().strftime("%m%d%Y%H%M%S")
-            email = f"{base_part}{random_part}@{domain}"
+            email = f"learnqa{random_part}@example.com"
 
         email = email.replace('@', '')
 
