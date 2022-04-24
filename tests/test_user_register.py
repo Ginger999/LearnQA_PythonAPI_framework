@@ -1,8 +1,9 @@
 import allure
-import requests
-from lib.base_case import BaseCase  # import lib.base_case as BaseCase
-from lib.assertions import Assertions  # import lib.assertions as Assertions
 import pytest
+from datetime import datetime
+from lib.assertions import Assertions  # import lib.assertions as Assertions
+from lib.base_case import BaseCase  # import lib.base_case as BaseCase
+from lib.my_requests import MyRequests  # import lib.my_requests as MyRequests
 
 
 @allure.epic("Registration cases")
@@ -21,7 +22,7 @@ class TestUserRegister(BaseCase):
         :return: JSON {'data': data, 'response': response}
         """
         data = self.prepare_registration_data()
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
+        response = MyRequests.post("/user/", data=data)
 
         Assertions.assert_status_code(response, 200)
         Assertions.assert_json_has_key(response, "id")
@@ -32,7 +33,7 @@ class TestUserRegister(BaseCase):
         existing_email = self.existing_email
         data = self.prepare_registration_data(existing_email)
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
+        response = MyRequests.post("/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
         assert response.content.decode("utf-8") == f"Users with email '{existing_email}' already exists", \
@@ -43,7 +44,7 @@ class TestUserRegister(BaseCase):
         data = self.prepare_registration_data()
         data['email'] = self.prepare_invalid_format_email(data['email'])
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
+        response = MyRequests.post("/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
         assert response.content.decode(
@@ -55,7 +56,7 @@ class TestUserRegister(BaseCase):
         data = self.prepare_registration_data()
         del data[param]
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
+        response = MyRequests.post("/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
         Assertions.assert_required_params(response, param)
@@ -66,7 +67,7 @@ class TestUserRegister(BaseCase):
         param = 'username'
         data[param] = self.too_short_first_name
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
+        response = MyRequests.post("/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
         Assertions.assert_too_short_param_value(response, param, data[param])
@@ -77,7 +78,7 @@ class TestUserRegister(BaseCase):
         param = 'username'
         data[param] = 'a' * 251
 
-        response = requests.post("https://playground.learnqa.ru/api/user/", data=data)
+        response = MyRequests.post("/user/", data=data)
 
         Assertions.assert_status_code(response, 400)
         Assertions.assert_too_long_param_value(response, param, data[param])
