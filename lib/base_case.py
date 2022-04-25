@@ -8,7 +8,7 @@ class BaseCase:
         'email': 'vinkotov@example.com',
         'password': '1234'
     }
-    existing_user_id = 2
+    existing_user_id: int = 2
 
     too_short_first_name = 'a'
     changed_user_params = {}
