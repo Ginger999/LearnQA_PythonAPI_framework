@@ -52,14 +52,14 @@ class Assertions:
             assert name not in response_as_dict, f"Response JSON shouldn't have key '{name}', but it's present"
 
     @staticmethod
-    def assert_status_code(response: Response, expected_status_code):
+    def assert_status_code(response: Response, expected_status_code, error_message=""):
         assert response.status_code == expected_status_code,\
-            f"Unexpected status code! Expected: {expected_status_code} Actual: {response.status_code}"
+            f"Unexpected status code! Expected: {expected_status_code} Actual: {response.status_code} {error_message}"
 
     @staticmethod
-    def assert_unexpected_status_code(response: Response, unexpected_status_code):
+    def assert_unexpected_status_code(response: Response, unexpected_status_code, error_message=""):
         assert response.status_code != unexpected_status_code, \
-            f"Status code should not be equal {unexpected_status_code}"
+            f"Status code should not be equal {unexpected_status_code} {error_message}"
 
     @staticmethod
     def assert_required_params(response: Response, param):
@@ -73,7 +73,7 @@ class Assertions:
 
     @staticmethod
     def assert_auth_token_not_supplied(response: Response, param, value):
-        assert response.content.decode("utf-8") != f"Auth token not supplied1", \
+        assert response.content.decode("utf-8") == f"Auth token not supplied", \
             f"The attempt to changed '{param}' with '{value}' for unlogged user"
 
     @staticmethod
