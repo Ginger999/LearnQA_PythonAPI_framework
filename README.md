@@ -5,10 +5,12 @@ python --version
 
 // Запуск тестов
 python -m pytest -s tests/test_user_auth.py -k test_auth_user
-python -m pytest --alluredir=test_results/ -s tests/test_user_auth.py
 
-// Установка allure
-scoop install allure
+// Allure
+Документация: https://docs.qameta.io/allure/#_pytest
+Установка allure: scoop install allure
+Запуск тестов: python -m pytest --alluredir=test_results/ -s tests/test_user_auth.py
+Сгенерировать отчеты: allure serve test_results
 
 // Переменная окружения ENV
 Запускать через cmd (через терминал не работает)
