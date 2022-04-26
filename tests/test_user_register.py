@@ -53,6 +53,7 @@ class TestUserRegister(BaseCase):
     @allure.description("This test checks that the needed param of user is present")
     @pytest.mark.parametrize('param', required_params)
     def test_required_params(self, param):
+        data = self.prepare_registration_data()
         del data[param]
 
         response = MyRequests.post("/user/", data=data)
