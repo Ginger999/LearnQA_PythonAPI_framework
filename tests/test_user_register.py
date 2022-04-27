@@ -16,6 +16,8 @@ class TestUserRegister(BaseCase):
         ("email")
     ]
 
+    @allure.suite("create_001")
+    @allure.title("Valid user creation")
     @allure.description("This test creates user successfully")
     def test_create_user_successfully(self):
         """
@@ -28,6 +30,8 @@ class TestUserRegister(BaseCase):
         Assertions.assert_json_has_key(response, "id")
         return {'data': data, 'response': response}
 
+    @allure.suite("create_002")
+    @allure.title("Invalid user creation with an existing email")
     @allure.description("This test tries to create a user that already exists")
     def test_create_user_with_existing_email(self):
         existing_email = self.existing_user_data['email']
@@ -39,6 +43,8 @@ class TestUserRegister(BaseCase):
         assert response.content.decode("utf-8") == f"Users with email '{existing_email}' already exists", \
             f"Unexpected response content '{response.content}'"
 
+    @allure.suite("create_003")
+    @allure.title("Invalid user creation with invalid email format")
     @allure.description("This test tries to create a user using invalid email format")
     def test_invalid_email_format(self):
         data = self.prepare_registration_data()
@@ -50,6 +56,8 @@ class TestUserRegister(BaseCase):
         assert response.content.decode(
             "utf-8") == f"Invalid email format", f"Invalid email format {data['email']}"
 
+    @allure.suite("create_004")
+    @allure.title("Invalid user creation with insufficient params")
     @allure.description("This test checks that the needed param of user is present")
     @pytest.mark.parametrize('param', required_params)
     def test_required_params(self, param):
@@ -61,6 +69,8 @@ class TestUserRegister(BaseCase):
         Assertions.assert_status_code(response, 400)
         Assertions.assert_required_params(response, param)
 
+    @allure.suite("create_005")
+    @allure.title("Invalid user creation with too short username")
     @allure.description("This test tries to create a user using too short username")
     def test_short_username(self):
         data = self.prepare_registration_data()
@@ -72,6 +82,8 @@ class TestUserRegister(BaseCase):
         Assertions.assert_status_code(response, 400)
         Assertions.assert_too_short_param_value(response, param, data[param])
 
+    @allure.suite("create_006")
+    @allure.title("Invalid user creation with too long username")
     @allure.description("This test tries to create a user using too long username")
     def test_too_long_username(self):
         data = self.prepare_registration_data()

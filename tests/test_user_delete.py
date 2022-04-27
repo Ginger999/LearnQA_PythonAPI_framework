@@ -8,6 +8,7 @@ from lib.my_requests import MyRequests  # import lib.my_requests as MyRequests
 
 @allure.epic("Deleting cases")
 class TestUserDelete(BaseCase):
+    @allure.step
     def create_user(self):
         """
         Create User using the exiting test
@@ -30,6 +31,7 @@ class TestUserDelete(BaseCase):
 
         return data
 
+    @allure.step
     def login_by_user(self, email, password):
         """
         :return: response
@@ -40,6 +42,7 @@ class TestUserDelete(BaseCase):
 
         return response
 
+    @allure.step
     def get_user(self, user_id, token, auth_sid):
         """
         :return: response
@@ -51,6 +54,7 @@ class TestUserDelete(BaseCase):
         )
         return response
 
+    @allure.step
     def delete_user(self, user_id, token, auth_sid):
         response = MyRequests.delete(
             f"/user/{user_id}",
@@ -59,6 +63,8 @@ class TestUserDelete(BaseCase):
         )
         return response
 
+    @allure.suite("delete_001")
+    @allure.title("Deleting an existing user")
     @allure.description("This test tries to remove a protected user that cannot be removed")
     def test_delete_user_with_existing_email(self):
         user_id = self.existing_user_id
@@ -75,6 +81,8 @@ class TestUserDelete(BaseCase):
         response = self.delete_user(user_id, token, auth_sid)
         Assertions.assert_status_code(response, 400, f"{response.text}")
 
+    @allure.suite("delete_002")
+    @allure.title("Deleting a created user")
     @allure.description("This test deletes just created user")
     def test_delete_just_created_user(self):
         # Register
@@ -96,6 +104,8 @@ class TestUserDelete(BaseCase):
         resulted_user = self.get_user(user_id, token, auth_sid)
         Assertions.assert_status_code(resulted_user, 404, f"{resulted_user.text}")
 
+    @allure.suite("delete_003")
+    @allure.title("Deleting a user by another user")
     @allure.description("This test is logged in by User1 and tries delete data of User2")
     def test_delete_user2_by_logged_user1(self):
         # Register User1 and User2

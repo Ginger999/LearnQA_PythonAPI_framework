@@ -36,6 +36,7 @@ class TestUserEdit(BaseCase):
 
         return data
 
+    @allure.step
     def login_by_user(self, email, password):
         """
         :return: response
@@ -46,6 +47,7 @@ class TestUserEdit(BaseCase):
 
         return response
 
+    @allure.step
     def edit_user(self, user_id, token, auth_sid, param, param_value):
         """
         :return: response
@@ -58,6 +60,7 @@ class TestUserEdit(BaseCase):
         )
         return response
 
+    @allure.step
     def get_user(self, user_id, token, auth_sid):
         """
         :return: response
@@ -69,6 +72,8 @@ class TestUserEdit(BaseCase):
         )
         return response
 
+    @allure.suite("edit_001")
+    @allure.title("Valid user editing")
     @allure.description("This test edits just created user firstname and save edited data")
     @pytest.mark.parametrize('param', include_params)
     def test_edit_just_created_user(self, param):
@@ -92,6 +97,8 @@ class TestUserEdit(BaseCase):
         Assertions.assert_status_code(resulted_user, 200)
         Assertions.assert_json_value_by_name(resulted_user, param, new_param_value, "")
 
+    @allure.suite("edit_002")
+    @allure.title("Invalid edit for user without login")
     @allure.description("This test tries edits just created user without login")
     @pytest.mark.parametrize('param', include_params)
     def test_edit_user_without_login(self, param):
@@ -108,6 +115,8 @@ class TestUserEdit(BaseCase):
         Assertions.assert_status_code(edited_user, 400)
         Assertions.assert_auth_token_not_supplied(edited_user, param, new_param_value)
 
+    @allure.suite("edit_003")
+    @allure.title("Invalid edit for one user by another user")
     @allure.description("This test is logged in by User1 and tries change data of User2")
     @pytest.mark.parametrize('param', include_params)
     def test_edit_user2_by_logged_user1(self, param):
@@ -149,6 +158,8 @@ class TestUserEdit(BaseCase):
         Assertions.assert_status_code(resulted_user_2, 200)
         Assertions.assert_json_value_by_name(resulted_user_2, param, old_param_value_2, "")
 
+    @allure.suite("edit_004")
+    @allure.title("Invalid edit for user with invalid email")
     @allure.description("This test is logged in by User1 and tries replace email"
                         "with new email which doesn't contain '@'")
     def test_edit_user_with_invalid_format_email(self):
@@ -174,6 +185,8 @@ class TestUserEdit(BaseCase):
         Assertions.assert_status_code(edited_user, 400)
         Assertions.assert_invalid_email_format(edited_user, new_param_value)
 
+    @allure.suite("edit_005")
+    @allure.title("Invalid edit for user with too short 'firstName'")
     @allure.description("This test is logged in by User1 and tries replace firstName"
                         "with new firstName which has too short length")
     def test_with_too_short_firstname(self):

@@ -7,15 +7,19 @@ from lib.my_requests import MyRequests  # import lib.my_requests as MyRequests
 
 @allure.epic("User info getting cases")
 class TestUserGet(BaseCase):
+
+    @allure.suite("get_001")
+    @allure.title("Getting short user info without logging in")
+    @allure.description("This test should get not all user params")
     def test_get_user_details_not_auth(self):
         response = MyRequests.get("/user/2")
 
         Assertions.assert_json_has_key(response, "username")
         Assertions.assert_json_has_not_keys(response, ["email", "firstName", "lastName"])
 
-        # print(response.content)
-
-    @allure.description("This test loggings by user and read expected user info")
+    @allure.suite("get_002")
+    @allure.title("Getting full user info")
+    @allure.description("This test loggings by user and read all expected user info")
     def test_get_user_details_auth_as_same_user(self):
         data = self.existing_user_data
         response1 = MyRequests.post("/user/login", data=data)
@@ -33,6 +37,8 @@ class TestUserGet(BaseCase):
         expected_fields = ["username", "email", "firstName", "lastName"]
         Assertions.assert_json_has_keys(response2, expected_fields)
 
+    @allure.suite("get_003")
+    @allure.title("Getting information from one user to another")
     @allure.description("This test logins by User1 and tries to get User2 info")
     def test_get_user_details_auth_as_another_user(self):
         # Register User1
